@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function(){
 	populateNavSectionNames();
 	populateNavList();
 	actionOnClick();
-	//actionOnScroll();
+	actionOnScroll();
 });
 
 // Populate navSectionNames 
@@ -135,41 +135,31 @@ function actionOnClick(){
 }
 
 function actionOnScroll(){
-	
-	const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
-	const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
-	
-	const topLimit = viewportHeight * 0.2;
-	const bottomLimit = viewportWidth *0.8;
 	document.addEventListener('scroll', function(event){
+		const upperLimit = window.scrollY;
+		const lowerLimit = document.documentElement.clientHeight + upperLimit;
 		for(let x=0; x < sects.length; x++){
-			const isOut = isOutOfViewport(sects[x]);
-			
-			if(!out.top){
-				sects[x].classList.add('active__section');
-				sects[x].firstElementChild.firstElementChild.style.color = '#c06c6c';
-			}else{
-				sects[x].remove('active__section');
-				sects[x].firstElementChild.firstElementChild.style.color = '#fff';
-			}
+			checkIfContact(sects[x], upperLimit, lowerLimit);
 		}
 	});
 }
-/*
-[{},{},{},{}]
 
-function toggleActive(){
-	for(let x=0; x < sects.length; x++){
-		if(isInsideBoundaries(sects[x])){
-			sects[x].classList.add('active__section');
-			return sects[x];
-		}else{
-			sects[x].classList.remove('active__section');
-			return null;
-		}
-	}
+
+function checkIfContact(elem, upperLimit, lowerLimit){
+    const Top = elem.getBoundingClientRect().y;
+    const Bottom = elem.getBoundingClientRect().height + Top;
+    if((Top > upperLimit && Top < lowerLimit)
+        || (Top < upperLimit && Bottom > lowerLimit)
+        || (Top < upperLimit && Bottom < lowerLimit && Bottom > upperLimit)
+        ){
+        elem.classList.add('active__section');
+		elem.firstElementChild.firstElementChild.style.color = '#c06c6c';
+    }else{
+        elem.classList.remove('active__section');
+		elem.firstElementChild.firstElementChild.style.color = '#fff';
+    }
 }
-*/
+
 
 
 /* 
@@ -184,24 +174,6 @@ if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigat
 
 
 */
-
-var isOutOfViewport = function (elem) {
-
-	// Get element's bounding
-	var bounding = elem.getBoundingClientRect();
-
-	// Check if it's out of the viewport on each side
-	var out = {};
-	out.top = bounding.top < 0;
-	out.left = bounding.left < 0;
-	out.bottom = bounding.bottom > (window.innerHeight || document.documentElement.clientHeight);
-	out.right = bounding.right > (window.innerWidth || document.documentElement.clientWidth);
-	out.any = out.top || out.left || out.bottom || out.right;
-	out.all = out.top && out.left && out.bottom && out.right;
-
-	return out;
-
-};
 
 
 // Set sections as active
