@@ -19,7 +19,7 @@
 */
 const navSectionNames = [];
 let navlist, sects, sectNames;
-let oldActiveSection;
+let oldActiveSection, oldScrolled;
 /**
  * End Global Variables
  * Start Helper Functions
@@ -47,6 +47,31 @@ function isInsideBoundaries(elem) {
 					  boundary.bottom <= viewportHeight;
 					  boundary.right <= viewportWidth;
     return isBounded;
+}
+
+// checking for customized viewport
+function isScrolledIntoView(el) {
+    let rect = el.getBoundingClientRect();
+    let elemTop = rect.top;
+    let elemBottom = rect.bottom;
+
+    // setting degrees of visibility within a customised viewport (based on testing)
+    // Partially visible elements return true based on this calculations:	
+    let isVisible1 = (elemTop >= -50) && (elemBottom <= window.innerHeight);
+    let isVisible2 = (elemTop < -50) && (elemBottom > window.innerHeight);
+    let isVisible3 = (elemTop < -50) && (elemBottom > window.innerHeight * 1.4)&& (elemBottom > window.innerHeight);
+    let isVisible4 = (elemTop > 0 && elemTop < window.innerHeight * 0.75) && (elemBottom > window.innerHeight);
+return isVisible1 || isVisible2 || isVisible3 || isVisible4;
+}
+// check if section is in contact with the customised view port (if partially visible)
+function checkIfContact(elem){
+    if(isScrolledIntoView(elem)){
+        elem.classList.add('active__section');
+		elem.firstElementChild.firstElementChild.style.color = '#c06c6c';
+    }else{
+		elem.classList.remove('active__section');
+		elem.firstElementChild.firstElementChild.style.color = '#fff';
+	}
 }
 
 /**
@@ -133,32 +158,15 @@ function actionOnClick(){
 		
 	});
 }
-
 function actionOnScroll(){
 	document.addEventListener('scroll', function(event){
-		const upperLimit = window.scrollY;
-		const lowerLimit = document.documentElement.clientHeight + upperLimit;
 		for(let x=0; x < sects.length; x++){
-			checkIfContact(sects[x], upperLimit, lowerLimit);
+			checkIfContact(sects[x]);
 		}
 	});
 }
 
 
-function checkIfContact(elem, upperLimit, lowerLimit){
-    const Top = elem.getBoundingClientRect().y;
-    const Bottom = elem.getBoundingClientRect().height + Top;
-    if((Top > upperLimit && Top < lowerLimit)
-        || (Top < upperLimit && Bottom > lowerLimit)
-        || (Top < upperLimit && Bottom < lowerLimit && Bottom > upperLimit)
-        ){
-        elem.classList.add('active__section');
-		elem.firstElementChild.firstElementChild.style.color = '#c06c6c';
-    }else{
-        elem.classList.remove('active__section');
-		elem.firstElementChild.firstElementChild.style.color = '#fff';
-    }
-}
 
 
 
