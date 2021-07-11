@@ -115,8 +115,17 @@ function populateNavList(){
 		navlist.appendChild(liElem);
 	}
 }
-
-// Scroll to section on link click
+/**
+* @description a function that will add a click listener to our navigation list
+* itself so we avoid too many handlers for each element.
+* it will be called from the initializer function.
+* it first check that a list item itself is clicked not the list itself
+* then it gets section id from the event target, so we can use it to query 
+* the section itself to render it active.
+* then it renders the last active section into inactive
+* after that it scrolls the element smoothly to the viewport
+* it also takes care of who is the currently active anchor.
+*/
 function actionOnClick(){
 	navlist.addEventListener('click', function(event){
 		// check that a list item itself is clicked not the list itself
@@ -152,6 +161,7 @@ function actionOnClick(){
 	});
 }
 
+
 /**
 * @description a function that will add a scroll listener on the document
 * it will be called from the initializer function, it adds checkSection function
@@ -180,7 +190,7 @@ function checkSection(){
 		for(let x=0; x < sects.length; x++){
 			decorateIfInScope(sects[x]);
 		}
-	}, 600);
+	}, 700);
 }
 
 /**
@@ -199,8 +209,9 @@ function checkDevice(){
 	let icon = document.querySelector('.icon');
 	let iconI = document.getElementsByClassName('fa-bars')[0];
 	if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
-		// true for mobile device
+		//for mobile device
 		navlist.style.display = 'block';
+		navlist.style.backgroundColor = 'transparent';
 		navlist.childNodes.forEach(function(elem){
 			elem.style.display = 'block';			
 		});
@@ -209,7 +220,7 @@ function checkDevice(){
 		icon.onclick = changeStyle;
 		iconI.style.cssText = 'font-size: 50px;';
 	}else{
-		// false for not mobile device
+		//for not mobile device
 		icon.style.display = 'none';
 		navlist.style.display = 'block';
 	}
