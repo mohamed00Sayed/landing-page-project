@@ -18,17 +18,17 @@
  * 
 */
 const navSectionNames = [];
-let navlist, sects, sectNames;
-let oldActiveSection, oldActiveItem;
+let navlist, sects, sectNamesHeaders;
+let oldActiveSection;
 /**
  * End Global Variables
  * Start Helper Functions
  * 
 */
-function fixLength(string){
+function fixLength(string, length){
 	let str = string;
-	if(string.length > 9){
-		str = string.substring(0,9);
+	if(string.length > length){
+		str = string.substring(0,length);
 		str += '...';
 	}
 	return str;
@@ -61,26 +61,13 @@ function fixLength(string){
 }
 
 
-function changeStyle() {
-  if (navlist.style.display === 'block') {
-    navlist.style.display = 'none';
-  } else {
-    navlist.style.display = 'block';
-  }
-}
+
 /**
  * End Helper Functions
  * Begin Main Functions
  * 
 */
 
-// build the nav
-
-
-// Add class 'active' to section when near top of viewport
-
-
-// Scroll to anchor ID using scrollTO event
 
 
 /**
@@ -93,24 +80,25 @@ NodeList.prototype.forEach = Array.prototype.forEach
 document.addEventListener('DOMContentLoaded', function(){
 	navlist = document.querySelector('#navbar__list');
 	sects = document.querySelectorAll('main section');
-	sectNames = document.querySelectorAll('.landing__container h2');
+	sectNamesHeaders = document.querySelectorAll('.landing__container h2');
 	
 	populateNavSectionNames();
 	populateNavList();
 	checkDevice();
 	actionOnClick();
 	actionOnScroll();
+	actionOnScrollStop();
 });
 
 // Populate navSectionNames 
 function populateNavSectionNames(){
 
 	for (let x=0; x < sects.length; x++){
-		const sectName = sectNames[x].textContent;
+		const sectName = sectNamesHeaders[x].textContent;
 		const sectId = 'section' + (x + 1);
 		sects[x].setAttribute('data-nav',sectName);
 		sects[x].setAttribute('id', sectId);
-		navSectionNames.push(fixLength(sectName));
+		navSectionNames.push(fixLength(sectName, 9));
 	}
 }
 
@@ -138,7 +126,6 @@ function actionOnClick(){
 			// and its heading after that so we can change its color
 			const sectionId = event.target.getAttribute('id').substring(0,8);
 			const section = document.querySelector('#' +sectionId);
-			const heading = section.firstElementChild.firstElementChild;
 			const currentActiveSection = section;
 			// add active__section class to the section already chosen from the nav bar	
 			// check for oldActiveSection if it exists and not equal to the currently selected section
@@ -149,9 +136,9 @@ function actionOnClick(){
 			}
 			// reassign(or assign if it's the first click) oldActiveSection variable
 			oldActiveSection = sectionId.substring(7,);
-			// scroll to the section just chosen
-			section.scrollIntoView();	
-			/////////////////////////////////////
+			// scroll to the section just chosen in a smooth way !
+			section.scrollIntoView({behavior: 'smooth'});	
+			/////////////////////////////////////////////////////////////
 			let activeId = event.target.getAttribute('id');
 			event.target.classList.add('active');
 			let listElements = navlist.childNodes;
@@ -165,52 +152,106 @@ function actionOnClick(){
 	});
 }
 
-
-function onIconClick(){
-	let icon = document.querySelector('.icon');
-	icon.onclick = changeStyle;
+/**
+* @description a function that will add a scroll listener on the document
+* it will be called from the initializer function, it adds checkSection function
+* as the listener.
+*/
+function actionOnScroll(){
+	document.addEventListener('scroll',checkSection);
 }
 
-function actionOnScroll(){
-	document.addEventListener('scroll', function(event){
-		navlist.style.display = 'block'
+/**
+* a listener function that will be added on the document to listen for scroll events
+* when it is called it starts by displaying our navigation list, and then defines a timer
+* and every time it is called it will clear the last timer and sets a new one to be called
+* after 600 milliseconds, and that will enusure that the selected element is specified 
+* in the viewport so when scrolling from the first section to the last section no flickering 
+* will occur in the menu list items occur (that occurs because they will pass through the 
+* viewport and get active class added to them and get highlighted !!) 
+* the function it sets the time for will ask decorateIfInScope function to check and decorate
+* if the element is in the viewport.
+*/
+function checkSection(){
+	navlist.style.display = 'block';
+	let timer;
+	timer && clearTimeout(timer);
+    timer = setTimeout(function(){
 		for(let x=0; x < sects.length; x++){
 			decorateIfInScope(sects[x]);
 		}
-	});
+	}, 600);
 }
 
-// to detect a mobile device
-
+/**
+* @description a function that will act based on the user agent device 
+* it first gets the icon specified to be displayed as 
+* a hamberger menu icon from the DOM, then it gets the element specified 
+* to hold that icon so that we can change the default size (increase it a little bit)
+* then it checks to see if the user agent is a mobile device, if it evaluates to true 
+* then it will set the display our navigation list to 'block', and  then loop
+* over its child nodes to set their display to 'block'
+* after that sets some styling for our hamberger icon and change its size.
+* if it evaluates to false, it will not display the icon and will display 
+* our navigation list.
+*/
 function checkDevice(){
 	let icon = document.querySelector('.icon');
+	let iconI = document.getElementsByClassName('fa-bars')[0];
 	if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
 		// true for mobile device
-		console.log("mobile device");
-		navlist.style.display = 'none';
-		navlist.style.backgroundColor = 'transparent';
+		navlist.style.display = 'block';
 		navlist.childNodes.forEach(function(elem){
-			elem.style.display = 'block';
+			elem.style.display = 'block';			
 		});
-		icon.style.cssText = 'background: black; display: block; position: absolute;right: 0;top: 0;';
-		icon.onclick = changeStyle;
 		
+		icon.style.cssText = 'background-color: transparent; display: block; position: absolute;right: 0;top: 0;';
+		icon.onclick = changeStyle;
+		iconI.style.cssText = 'font-size: 50px;';
 	}else{
 		// false for not mobile device
 		icon.style.display = 'none';
 		navlist.style.display = 'block';
-		console.log("not mobile device");
 	}
 	
 }
 
-document.addEventListener('scroll', checkEvery);
+/**
+* @description a function that will be added to our hamberger menu icon as
+* a click listener, it will switch the display of our navigation list.
+*/
+function changeStyle() {
+  if (navlist.style.display === 'block') {
+    navlist.style.display = 'none';
+  } else {
+    navlist.style.display = 'block';
+  }
+}
 
+/**
+* @description a function that adds a listener on the document
+* object for listening to when scrolling of the page
+* stops , it will be called from inside the initializer()
+* function to add the listener. 
+*/
+function actionOnScrollStop(){
+	document.addEventListener('scroll', checkEvery);
+}
+
+/**
+* @description a function that will be the listener for detecting
+* when scrolling stops, it defines a timer every time it is called
+* and clear the last one. 
+* the function it sets time for just change the display property of 
+* our unordered list (in the navigation menu) to be 'none' so that 
+* it disappears after scrolling.
+* it sets the time to be 4 seconds to give the user the ability to 
+* interact with the menu. 
+*/
 function checkEvery(){
 	let timer;
 	timer && clearTimeout(timer);
     timer = setTimeout(function() {
-		navlist.style.display = 'none'
-		console.log('stopped it');
-	}, 500);
+		navlist.style.display = 'none';
+	}, 4000);
 }
